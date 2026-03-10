@@ -116,6 +116,7 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             self.send_json(400, {"message": "请求体格式错误"})
             return
+        print("payload:", payload)
         prompt = build_prompt(payload)
         body = json.dumps({
             "model": "deepseek-chat",
@@ -133,9 +134,11 @@ class Handler(BaseHTTPRequestHandler):
                 data = resp.read().decode("utf-8")
         except error.HTTPError as e:
             detail = e.read().decode("utf-8")
+            print("deepseek_http_error:", e.code, detail)
             self.send_json(500, {"message": "DeepSeek 调用失败", "detail": detail})
             return
         except Exception as e:
+            print("deepseek_error:", str(e))
             self.send_json(500, {"message": "DeepSeek 调用失败", "detail": str(e)})
             return
         try:
@@ -144,6 +147,7 @@ class Handler(BaseHTTPRequestHandler):
             extracted = extract_json(content)
             result = json.loads(extracted)
         except Exception:
+            print("deepseek_parse_error:", data)
             self.send_json(500, {"message": "DeepSeek 返回格式错误", "detail": data})
             return
         self.send_json(200, result)
