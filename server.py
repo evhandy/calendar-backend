@@ -151,7 +151,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         url_path = unquote(self.path)
         if url_path == "/":
-            url_path = "/index.html"
+            self.send_response(200)
+            self.set_cors()
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            body = json.dumps({"status": "ok"}, ensure_ascii=False).encode("utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         target = os.path.normpath(os.path.join(BASE_DIR, url_path.lstrip("/")))
         if not target.startswith(BASE_DIR):
             self.send_error(403)
@@ -170,6 +177,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    def do_HEAD(self):
+        self.send_response(200)
+        self.set_cors()
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
 
 if __name__ == "__main__":
