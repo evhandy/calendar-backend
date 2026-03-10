@@ -156,5 +156,5 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    server = HTTPServer(("", PORT), Handler)
+    server = HTTPServer(("0.0.0.0", PORT), Handler)
     server.serve_forever()
