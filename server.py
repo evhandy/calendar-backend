@@ -78,13 +78,29 @@ def extract_json(content):
 
 
 class Handler(BaseHTTPRequestHandler):
+    def set_cors(self):
+        origin = self.headers.get("Origin")
+        if origin:
+            self.send_header("Access-Control-Allow-Origin", origin)
+        else:
+            self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        self.send_header("Access-Control-Max-Age", "86400")
+
     def send_json(self, status, data):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
+        self.set_cors()
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.set_cors()
+        self.end_headers()
 
     def do_POST(self):
         if self.path != "/api/deepseek-plan":
@@ -149,6 +165,7 @@ class Handler(BaseHTTPRequestHandler):
         with open(target, "rb") as f:
             data = f.read()
         self.send_response(200)
+        self.set_cors()
         self.send_header("Content-Type", f"{ctype}; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
